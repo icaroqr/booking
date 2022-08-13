@@ -1,0 +1,7 @@
+version: '3'
+services:
+  booking:
+    image: icarorez/alten-booking
+    build: .
+    ports:
+      - "8080:8080"
