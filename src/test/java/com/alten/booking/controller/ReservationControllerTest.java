@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
@@ -41,14 +42,17 @@ public class ReservationControllerTest {
     @Test
     @DisplayName("GET /reservation/1 - Success")
     public void givenReservationId_whenGetReservationById_thenReturnJsonArray() throws Exception{
-        ReservationDto reservationDto = new ReservationDto(1L,1L,"guest@gmail.com", LocalDate.now(), LocalDate.now().plusDays(2), StatusEnum.RESERVED.toString());
+        ReservationDto reservationDto = new ReservationDto(1L,1L,"guest@gmail.com", 
+                                                    LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
+                                                    LocalDate.now().plusDays(2).format(DateTimeFormatter.ISO_LOCAL_DATE), 
+                                                    StatusEnum.RESERVED.toString());
        
         given(service.findDtoById(1L)).willReturn(reservationDto);
         
         mockMvc.perform(get("/reservation/1")
            .contentType(MediaType.APPLICATION_JSON))
            .andExpect(status().isOk())
-           .andExpect(jsonPath("$.id").value(1L))
+           .andExpect(jsonPath("$.reservationId").value(1L))
            .andExpect(jsonPath("$.guestEmail").value("guest@gmail.com"))
            .andExpect(jsonPath("$.status").value(StatusEnum.RESERVED.toString()));
            
@@ -65,8 +69,14 @@ public class ReservationControllerTest {
     @Test
     @DisplayName("POST /reservation -  Success")
     public void givenValidData_whenCreateReservation_thenReturnJsonArray() throws Exception{
-        ReservationCreateDto reservationCreateDto = new ReservationCreateDto("guest@gmail.com", LocalDate.now(), LocalDate.now().plusDays(2), 1L);
-        ReservationDto reservationDto = new ReservationDto(1L,1L,"guest@gmail.com", LocalDate.now(), LocalDate.now().plusDays(2), StatusEnum.RESERVED.toString());
+        ReservationCreateDto reservationCreateDto = new ReservationCreateDto("guest@gmail.com", 
+                                            LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
+                                            LocalDate.now().plusDays(2).format(DateTimeFormatter.ISO_LOCAL_DATE), 
+                                            1L);
+        ReservationDto reservationDto = new ReservationDto(1L,1L,"guest@gmail.com", 
+                                            LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
+                                            LocalDate.now().plusDays(2).format(DateTimeFormatter.ISO_LOCAL_DATE), 
+                                            StatusEnum.RESERVED.toString());
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
         given(service.validateAndCreateReservation(reservationCreateDto)).willReturn(reservationDto);
@@ -85,7 +95,10 @@ public class ReservationControllerTest {
     @Test
     @DisplayName("POST /reservation - Bad Request")
     public void givenInvalidData_whenCreateReservation_thenReturnBadRequest() throws Exception{
-        ReservationCreateDto reservationCreateDto = new ReservationCreateDto(null, LocalDate.now(), LocalDate.now().plusDays(2), null);
+        ReservationCreateDto reservationCreateDto = new ReservationCreateDto(null, 
+                                            LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
+                                            LocalDate.now().plusDays(2).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                                            null);
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
         when(service.validateAndCreateReservation(reservationCreateDto)).thenThrow(new RuntimeException("Invalid reservation data"));

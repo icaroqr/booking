@@ -1,6 +1,5 @@
 package com.alten.booking.dto;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import com.alten.booking.domain.Reservation;
@@ -32,15 +31,6 @@ public class ReservationDto {
         if(reservation.getRoom() != null) {
             this.roomId = reservation.getRoom().getId();
         }
-    }
-
-    public ReservationDto(Long reservationId, Long roomId, String guestEmail, LocalDate startDate, LocalDate endDate, String status) {
-        this.reservationId = reservationId;
-        this.guestEmail = guestEmail;
-        this.startDate = startDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
-        this.endDate = endDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
-        this.status = status;
-        this.roomId = roomId;
     }
 
 }

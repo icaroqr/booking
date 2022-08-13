@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -47,7 +48,10 @@ public class ReservationServiceTests {
     @Test
 	public void whenValidData_thenReservationShouldBeCreated() {
         String email = generateUniqueEmail();
-        ReservationCreateDto reservation = new ReservationCreateDto(email, LocalDate.now(), LocalDate.now().plusDays(1), mockRoom.getId());
+        ReservationCreateDto reservation = new ReservationCreateDto(email, 
+                                            LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
+                                            LocalDate.now().plusDays(2).format(DateTimeFormatter.ISO_LOCAL_DATE), 
+                                            mockRoom.getId());
 		Reservation createdReservation = reservationService.createReservation(reservation);
 		
         assertThat(createdReservation.getId()).isNotNull();
@@ -56,14 +60,20 @@ public class ReservationServiceTests {
 
     @Test
 	public void whenCreateReservation_AndHasNoRoom_thenInvalidDataExceptionIsThrown() {
-        ReservationCreateDto reservation = new ReservationCreateDto(generateUniqueEmail(), LocalDate.now(), LocalDate.now().plusDays(1), null);
+        ReservationCreateDto reservation = new ReservationCreateDto(generateUniqueEmail(), 
+                                            LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
+                                            LocalDate.now().plusDays(2).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                                            null);
 
 		assertThrows(InvalidDataAccessApiUsageException.class, () -> reservationService.createReservation(reservation));
 	}
 
     @Test
 	public void whenValidId_thenReservationShouldBeFound() {
-        ReservationCreateDto reservation = new ReservationCreateDto(generateUniqueEmail(), LocalDate.now(), LocalDate.now().plusDays(1), mockRoom.getId());
+        ReservationCreateDto reservation = new ReservationCreateDto(generateUniqueEmail(),
+                                            LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
+                                            LocalDate.now().plusDays(2).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                                            mockRoom.getId());
 		Reservation createdReservation = reservationService.createReservation(reservation);
         Reservation searchedReservation = reservationService.findById(createdReservation.getId());
 		

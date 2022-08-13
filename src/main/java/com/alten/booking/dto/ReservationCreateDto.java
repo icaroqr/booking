@@ -1,7 +1,5 @@
 package com.alten.booking.dto;
 
-import java.time.LocalDate;
-
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -18,10 +16,10 @@ public class ReservationCreateDto {
     private String guestEmail;
 
     @NotNull(message = "The reservation start date is required")
-    private LocalDate startDate;
+    private String startDate;
 
     @NotNull(message = "The reservation end date is required")
-    private LocalDate endDate;
+    private String endDate;
 
     @NotNull(message = "The reservation room is required")
     private Long roomId;

@@ -67,8 +67,8 @@ public class ReservationService {
     private Reservation toNewReservation(ReservationCreateDto dto) {
         Reservation reservation = new Reservation();
         reservation.setGuestEmail(dto.getGuestEmail());
-        reservation.setStartDate(dto.getStartDate());
-        reservation.setEndDate(dto.getEndDate());
+        reservation.setStartDate(LocalDate.parse(dto.getStartDate()));
+        reservation.setEndDate(LocalDate.parse(dto.getEndDate()));
         reservation.setRoom(roomService.findById(dto.getRoomId()));
         reservation.setCreateDate(LocalDate.now());
         reservation.setStatus(StatusEnum.RESERVED.toString());
