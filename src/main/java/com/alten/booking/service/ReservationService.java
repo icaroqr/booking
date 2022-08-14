@@ -1,5 +1,6 @@
 package com.alten.booking.service;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -58,7 +59,6 @@ public class ReservationService {
             validateReservation(new ReservationDto(dto)); 
             return new ReservationDto(createReservation(dto));
         }catch(InvalidReservationException e){
-            e.printStackTrace();
             throw e;
         }
     }
@@ -69,17 +69,17 @@ public class ReservationService {
             LocalDate startDate = LocalDate.parse(dto.getStartDate());
             LocalDate endDate = LocalDate.parse(dto.getEndDate());
             
-            if(startDate.isAfter(endDate) && startDate.isBefore(LocalDate.now())){
+            if(startDate.isAfter(endDate) || startDate.isBefore(LocalDate.now())){
                 throw new InvalidReservationException("Start date must be after today and before end date");
             }
             if(startDate.isEqual(endDate)){
                 throw new InvalidReservationException("Start date must be different than end date");
             }
-            if(startDate.plusDays(room.getRoomDetails().getMaxReserveDays()).isAfter(endDate)){
+            if(Duration.between(startDate.atStartOfDay(), endDate.atStartOfDay()).toDays() > room.getRoomDetails().getMaxReserveDays()){
                 throw new MaxReserveDaysException("Your reservation can't be longer than " + room.getRoomDetails().getMaxReserveDays() + " days");
             }
-            if(LocalDate.now().plusDays(room.getRoomDetails().getMaxReserveAdvanceDays()).isAfter(startDate) ||
-               LocalDate.now().plusDays(room.getRoomDetails().getMaxReserveAdvanceDays()).isAfter(endDate)){
+            if(startDate.isAfter(LocalDate.now().plusDays(room.getRoomDetails().getMaxReserveAdvanceDays())) ||
+               endDate.isAfter(LocalDate.now().plusDays(room.getRoomDetails().getMaxReserveAdvanceDays()))){
                 throw new MaxReserveAdvanceDaysException("Your reservation can't start or end more than " + room.getRoomDetails().getMaxReserveAdvanceDays() + " days from today");
             }
             // Check if it's validating an existing reservation
@@ -137,7 +137,6 @@ public class ReservationService {
             validateReservation(new ReservationDto(reservationId, dto)); 
             return new ReservationDto(updateReservation(reservationId, dto));
         }catch(InvalidReservationException e){
-            e.printStackTrace();
             throw e;
         }
     }

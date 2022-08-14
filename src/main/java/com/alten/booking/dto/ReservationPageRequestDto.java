@@ -30,6 +30,6 @@ public class ReservationPageRequestDto{
 	}
 
 	public PageRequest toPageRequest() {
-		return PageRequest.of(page, size, Sort.by("createDate").descending());
+		return PageRequest.of(page, size, Sort.by("startDate").ascending());
 	}
 }
