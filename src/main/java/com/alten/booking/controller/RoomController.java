@@ -14,23 +14,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alten.booking.dto.RoomCheckDto;
-import com.alten.booking.service.RoomService;
+import com.alten.booking.service.ReservationService;
 
 @RestController
 @RequestMapping(value = "room")
 public class RoomController {
     
     @Autowired
-    private RoomService roomService;
+    private ReservationService reservationService;
 
     @GetMapping(value = "/{id}/availableDates")
     public ResponseEntity<List<String>> getRoomAvailableDates(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(roomService.getRoomAvailableDates(id));
+        return ResponseEntity.status(HttpStatus.OK).body(reservationService.getRoomAvailableDates(id));
     }
 
     @GetMapping(value = "/{id}/available")
     public ResponseEntity<Boolean> isRoomAvailable(@PathVariable Long id, @RequestBody @Valid RoomCheckDto check) {
-        return ResponseEntity.status(HttpStatus.OK).body(roomService.isRoomAvailable(id, check));
+        return ResponseEntity.status(HttpStatus.OK).body(reservationService.isRoomAvailable(id, check));
     }
    
 }

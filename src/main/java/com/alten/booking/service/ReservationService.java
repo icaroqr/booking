@@ -1,6 +1,7 @@
 package com.alten.booking.service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +19,7 @@ import com.alten.booking.dto.ReservationDto;
 import com.alten.booking.dto.ReservationPageRequestDto;
 import com.alten.booking.dto.ReservationPageResponseDto;
 import com.alten.booking.dto.ReservationUpdateDto;
+import com.alten.booking.dto.RoomCheckDto;
 import com.alten.booking.exceptions.NotFoundException;
 import com.alten.booking.repository.ReservationRepository;
 import com.alten.booking.exceptions.InvalidReservationException;
@@ -39,8 +41,8 @@ public class ReservationService {
 		return result.orElseThrow(() -> new NotFoundException("Reservation not found for id: " + id));
     }
 
-    public List<Reservation> findAllReservedByRoom(Long roomId) {
-        return reservationRepo.findAllByRoomAndStatus(roomId, StatusEnum.RESERVED.toString());
+    public List<Reservation> findAllReservationsByRoom(Long roomId) {
+        return reservationRepo.findAllByRoomIdAndStatus(roomId, StatusEnum.RESERVED.toString());
     }
 
     public ReservationDto findDtoById(Long id) {
@@ -61,7 +63,7 @@ public class ReservationService {
         }
     }
 
-    private void validateReservation(ReservationDto dto) throws InvalidReservationException{
+    private void validateReservation(ReservationDto dto) throws InvalidReservationException {
         Room room = roomService.findById(dto.getRoomId());
         if(hasValidDates(dto) && room != null){
             LocalDate startDate = LocalDate.parse(dto.getStartDate());
@@ -77,17 +79,17 @@ public class ReservationService {
                 throw new MaxReserveDaysException("Your reservation can't be longer than " + room.getRoomDetails().getMaxReserveDays() + " days");
             }
             if(LocalDate.now().plusDays(room.getRoomDetails().getMaxReserveAdvanceDays()).isAfter(startDate) ||
-            LocalDate.now().plusDays(room.getRoomDetails().getMaxReserveAdvanceDays()).isAfter(endDate)){
+               LocalDate.now().plusDays(room.getRoomDetails().getMaxReserveAdvanceDays()).isAfter(endDate)){
                 throw new MaxReserveAdvanceDaysException("Your reservation can't start or end more than " + room.getRoomDetails().getMaxReserveAdvanceDays() + " days from today");
             }
             // Check if it's validating an existing reservation
             if(dto.getReservationId() != null){
                 if(reservationRepo.findTotalReservationsByRoomAndDateExceptCurrentReservation(dto.getRoomId(), startDate, endDate, dto.getReservationId()) > 0){
-                    throw new InvalidReservationException("This room is already reserved for these dates");
+                    throw new InvalidReservationException("This room is already reserved for these dates, please try another dates");
                 }
             }else{
                 if(reservationRepo.findTotalReservationsByRoomAndDate(dto.getRoomId(), startDate, endDate) > 0){
-                    throw new InvalidReservationException("This room is already reserved for these dates");
+                    throw new InvalidReservationException("This room is already reserved for these dates, please try another dates");
                 }
             }
         }
@@ -153,6 +155,48 @@ public class ReservationService {
         }
         reservation.setStatus(dto.getStatus());
         return reservationRepo.save(reservation);
+    }
+
+    public List<String> getRoomAvailableDates(Long id) {
+        Room room = roomService.findById(id);
+        List<Reservation> roomReservations = findAllReservationsByRoom(id);
+        List<String> availableDates = new ArrayList<>();
+        for(int i = 0; i < room.getRoomDetails().getMaxReserveAdvanceDays(); i++){
+            LocalDate date = LocalDate.now().plusDays(i);
+            if(isReservationDateAvailable(roomReservations, date)){
+                availableDates.add(date.format(DateTimeFormatter.ISO_LOCAL_DATE));
+            }
+        }
+        return availableDates;
+    }
+
+    private boolean isReservationDateAvailable(List<Reservation> roomReservations, LocalDate date) {
+        boolean available = true;
+        for (Reservation reservation : roomReservations) {
+            if(date.isAfter(reservation.getStartDate()) && date.isBefore(reservation.getEndDate()) || 
+                (date.isEqual(reservation.getStartDate()) || date.isEqual(reservation.getEndDate()))){
+                available = false;
+                break;
+            }
+        }
+        return available;
+    }
+
+    public Boolean isRoomAvailable(Long id, RoomCheckDto check) {
+        boolean available = true;
+        LocalDate startDate = LocalDate.parse(check.getStartDate());
+        LocalDate endDate = LocalDate.parse(check.getEndDate());
+
+        List<Reservation> roomReservations = findAllReservationsByRoom(id);
+        for (Reservation reservation : roomReservations) {
+            if(startDate.isAfter(reservation.getStartDate()) && startDate.isBefore(reservation.getEndDate()) || 
+                endDate.isAfter(reservation.getStartDate()) && endDate.isBefore(reservation.getEndDate()) ||
+                (startDate.isEqual(reservation.getStartDate()) || endDate.isEqual(reservation.getEndDate()))){
+                available = false;
+                break;
+            }
+        }
+        return available;
     }
 
 
