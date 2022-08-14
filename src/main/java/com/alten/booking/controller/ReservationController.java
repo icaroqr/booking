@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alten.booking.dto.ReservationCreateDto;
 import com.alten.booking.dto.ReservationPageRequestDto;
 import com.alten.booking.dto.ReservationPageResponseDto;
+import com.alten.booking.dto.ReservationUpdateDto;
 import com.alten.booking.dto.ReservationDto;
 import com.alten.booking.service.ReservationService;
 
@@ -30,13 +32,20 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.OK).body(reservationService.findDtoById(id));
     }
 
+    @GetMapping(value = "/list")
+    public ResponseEntity<ReservationPageResponseDto> getUserRerservationList(@RequestBody @Valid ReservationPageRequestDto reservationPageRequest) {
+        return ResponseEntity.status(HttpStatus.OK).body(reservationService.getUserReservationsPageList(reservationPageRequest));
+    }
+
     @PostMapping
     public ResponseEntity<ReservationDto> createReservation(@RequestBody @Valid ReservationCreateDto reservation) {
         return ResponseEntity.status(HttpStatus.CREATED).body(reservationService.validateAndCreateReservation(reservation));
     }
 
-    @GetMapping(value = "/list")
-    public ResponseEntity<ReservationPageResponseDto> getRerservationList(@RequestBody @Valid ReservationPageRequestDto reservationlistRequest) {
-        return ResponseEntity.status(HttpStatus.OK).body(reservationService.getReservationsPageList(reservationlistRequest));
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<ReservationDto> updateReservation(@PathVariable Long id, @RequestBody @Valid ReservationUpdateDto reservation) {
+        return ResponseEntity.status(HttpStatus.OK).body(reservationService.validateAndUpdateReservation(id, reservation));
     }
+
+   
 }

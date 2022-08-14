@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReservationDto {
-    
    
     private Long reservationId;
     private Long roomId;
@@ -20,7 +19,6 @@ public class ReservationDto {
     private String startDate;
     private String endDate;
     private String status;
-
 
     public ReservationDto(Reservation reservation) {
         this.reservationId = reservation.getId();
@@ -31,6 +29,22 @@ public class ReservationDto {
         if(reservation.getRoom() != null) {
             this.roomId = reservation.getRoom().getId();
         }
+    }
+
+    public ReservationDto(ReservationCreateDto reservation) {
+        this.guestEmail = reservation.getGuestEmail();
+        this.startDate = reservation.getStartDate();
+        this.endDate = reservation.getEndDate();
+        this.roomId = reservation.getRoomId();
+    }
+
+    public ReservationDto(Long reservationId, ReservationUpdateDto reservation) {
+        this.reservationId = reservationId;
+        this.roomId = reservation.getRoomId();
+        this.startDate = reservation.getStartDate();
+        this.endDate = reservation.getEndDate();
+        this.status = reservation.getStatus();
+        
     }
 
 }

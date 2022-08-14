@@ -2,6 +2,8 @@ package com.alten.booking.dto;
 
 import java.time.LocalDate;
 
+import javax.validation.constraints.NotBlank;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
@@ -16,6 +18,7 @@ public class ReservationPageRequestDto{
 	
 	private int page;
 	private int size;
+	@NotBlank(message = "The guest email is required")
 	private String guestEmail;
 	private LocalDate startDate;
 	private LocalDate endDate;
