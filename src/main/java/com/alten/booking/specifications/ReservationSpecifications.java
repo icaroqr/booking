@@ -28,7 +28,7 @@ public class ReservationSpecifications {
         };
     }
 
-    public static Specification<Reservation> equalToRoom(String roomId){
+    public static Specification<Reservation> equalToRoom(Long roomId){
         if(roomId == null) return null;
         return (root, query, cb) -> cb.equal(root.get("room").get("id"), roomId);
     }

@@ -1,6 +1,7 @@
 package com.alten.booking.repository;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,8 +17,8 @@ import com.alten.booking.domain.Reservation;
 public interface ReservationRepository extends JpaRepository<Reservation, Long>, JpaSpecificationExecutor<Reservation>{
 
     Page<Reservation> findAll(Pageable pageable);
-
-    Page<Reservation> findAllByGuestEmail(String guestEmail, Pageable pageable);  
+    
+    List<Reservation> findAllByRoomAndStatus(Long roomId, String status);
 
     @Query("SELECT COUNT(r) FROM Reservation r WHERE r.room.id = :roomId AND r.status = 'RESERVED' AND (r.startDate BETWEEN :startDate AND :endDate) OR (r.endDate BETWEEN :startDate AND :endDate)")
     int findTotalReservationsByRoomAndDate(@Param("roomId") Long roomId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);

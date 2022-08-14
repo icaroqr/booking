@@ -39,6 +39,10 @@ public class ReservationService {
 		return result.orElseThrow(() -> new NotFoundException("Reservation not found for id: " + id));
     }
 
+    public List<Reservation> findAllReservedByRoom(Long roomId) {
+        return reservationRepo.findAllByRoomAndStatus(roomId, StatusEnum.RESERVED.toString());
+    }
+
     public ReservationDto findDtoById(Long id) {
 		return new ReservationDto(findById(id));
     }
@@ -111,6 +115,7 @@ public class ReservationService {
         Specification<Reservation> filters = Specification.where(
             ReservationSpecifications.equalToGuestEmail(dto.getGuestEmail()))
             .and(ReservationSpecifications.btwStartDateAndEndDate(dto.getStartDate(), dto.getEndDate())
+            .and(ReservationSpecifications.equalToRoom(dto.getRoomId()))
         );
         Page<Reservation> page = reservationRepo.findAll(filters,dto.toPageRequest());
         return new ReservationPageResponseDto(page.getTotalElements(), page.getSize(), page.getTotalPages(), toDtoList(page.getContent()));

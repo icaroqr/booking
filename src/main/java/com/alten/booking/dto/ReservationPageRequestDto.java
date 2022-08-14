@@ -20,6 +20,7 @@ public class ReservationPageRequestDto{
 	private int size;
 	@NotBlank(message = "The guest email is required")
 	private String guestEmail;
+	private Long roomId;
 	private LocalDate startDate;
 	private LocalDate endDate;
 
