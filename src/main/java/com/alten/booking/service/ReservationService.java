@@ -207,5 +207,9 @@ public class ReservationService {
         return available;
     }
 
+    public void deleteReservation(Long id) {
+        reservationRepo.deleteById(id);
+    }
+
 
 }
