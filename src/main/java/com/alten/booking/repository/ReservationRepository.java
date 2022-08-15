@@ -20,10 +20,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>,
     
     List<Reservation> findAllByRoomIdAndStatus(Long roomId, String status);
 
-    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.room.id = :roomId AND r.status = 'RESERVED' AND (r.startDate BETWEEN :startDate AND :endDate) OR (r.endDate BETWEEN :startDate AND :endDate)")
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.room.id = :roomId AND r.status = 'RESERVED' AND (r.startDate BETWEEN :startDate AND :endDate) AND (r.endDate BETWEEN :startDate AND :endDate)")
     int findTotalReservationsByRoomAndDate(@Param("roomId") Long roomId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.room.id = :roomId AND r.id <> :reservationId AND r.status = 'RESERVED' AND (r.startDate BETWEEN :startDate AND :endDate) OR (r.endDate BETWEEN :startDate AND :endDate)")
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.room.id = :roomId AND r.id <> :reservationId AND r.status = 'RESERVED' AND (r.startDate BETWEEN :startDate AND :endDate) AND (r.endDate BETWEEN :startDate AND :endDate)")
     int findTotalReservationsByRoomAndDateExceptCurrentReservation(@Param("roomId") Long roomId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate, @Param("reservationId") Long reservationId);
     
 }

@@ -50,21 +50,19 @@ public class ReservationService {
 		return new ReservationDto(findById(id));
     }
 
-    public List<ReservationDto> findAll(){
-        return toDtoList(reservationRepo.findAll());
-    }
-
     public ReservationDto validateAndCreateReservation(ReservationCreateDto dto){
-        try{
-            validateReservation(new ReservationDto(dto)); 
-            return new ReservationDto(createReservation(dto));
-        }catch(InvalidReservationException e){
-            throw e;
-        }
+        validateReservation(new ReservationDto(dto)); 
+        return new ReservationDto(createReservation(dto));
     }
 
-    private void validateReservation(ReservationDto dto) throws InvalidReservationException {
-        Room room = roomService.findById(dto.getRoomId());
+    private void validateReservation(ReservationDto dto) {
+        Room room = null;
+        // Check if it's validating an existing reservation without changing room
+        if(dto.getRoomId() == null && dto.getReservationId() != null){
+            room = findById(dto.getReservationId()).getRoom();
+        }else{
+            room = roomService.findById(dto.getRoomId());
+        }
         if(hasValidDates(dto) && room != null){
             LocalDate startDate = LocalDate.parse(dto.getStartDate());
             LocalDate endDate = LocalDate.parse(dto.getEndDate());
@@ -82,10 +80,16 @@ public class ReservationService {
                endDate.isAfter(LocalDate.now().plusDays(room.getRoomDetails().getMaxReserveAdvanceDays()))){
                 throw new MaxReserveAdvanceDaysException("Your reservation can't start or end more than " + room.getRoomDetails().getMaxReserveAdvanceDays() + " days from today");
             }
-            // Check if it's validating an existing reservation
             if(dto.getReservationId() != null){
                 if(reservationRepo.findTotalReservationsByRoomAndDateExceptCurrentReservation(dto.getRoomId(), startDate, endDate, dto.getReservationId()) > 0){
                     throw new InvalidReservationException("This room is already reserved for these dates, please try another dates");
+                }
+                if(dto.getStatus() != null){
+                    try{
+                        StatusEnum.valueOf(dto.getStatus());
+                    }catch(IllegalArgumentException e){
+                        throw new InvalidReservationException("Reservation status not valid");
+                    }
                 }
             }else{
                 if(reservationRepo.findTotalReservationsByRoomAndDate(dto.getRoomId(), startDate, endDate) > 0){
@@ -133,12 +137,8 @@ public class ReservationService {
     }
 
     public ReservationDto validateAndUpdateReservation(Long reservationId, ReservationUpdateDto dto) {
-        try{
-            validateReservation(new ReservationDto(reservationId, dto)); 
-            return new ReservationDto(updateReservation(reservationId, dto));
-        }catch(InvalidReservationException e){
-            throw e;
-        }
+        validateReservation(new ReservationDto(reservationId, dto)); 
+        return new ReservationDto(updateReservation(reservationId, dto));
     }
 
     private Reservation updateReservation(Long reservationId, ReservationUpdateDto dto) {
