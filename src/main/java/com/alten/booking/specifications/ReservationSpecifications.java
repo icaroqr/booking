@@ -8,20 +8,20 @@ import com.alten.booking.domain.Reservation;
 
 public class ReservationSpecifications {
 
-    private static final String CREATE_DATE = "createDate";
+    private static final String START_DATE = "startDate";
 
     private ReservationSpecifications(){
         throw new IllegalStateException("Do not instantiate an Utility class");
     }
     
-    public static Specification<Reservation> btwStartDateAndEndDate(LocalDate startDate, LocalDate endDate){
+    public static Specification<Reservation> startDateBtw(LocalDate startDate, LocalDate endDate){
         return (root, query, cb) -> {
             if(startDate != null && endDate != null) {
-                return cb.between(root.get(CREATE_DATE), startDate, endDate);
+                return cb.between(root.get(START_DATE), startDate, endDate);
             } else if(startDate != null) {
-                return cb.greaterThanOrEqualTo(root.get(CREATE_DATE), startDate);
+                return cb.greaterThanOrEqualTo(root.get(START_DATE), startDate);
             } else if(endDate != null) {
-                return cb.lessThanOrEqualTo(root.get(CREATE_DATE), endDate);
+                return cb.lessThanOrEqualTo(root.get(START_DATE), endDate);
             } else {
                 return null;
             }

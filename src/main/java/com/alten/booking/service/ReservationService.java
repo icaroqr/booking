@@ -129,7 +129,7 @@ public class ReservationService {
     public ReservationPageResponseDto getUserReservationsPageList(ReservationPageRequestDto dto) {
         Specification<Reservation> filters = Specification.where(
             ReservationSpecifications.equalToGuestEmail(dto.getGuestEmail()))
-            .and(ReservationSpecifications.btwStartDateAndEndDate(dto.getStartDate(), dto.getEndDate())
+            .and(ReservationSpecifications.startDateBtw(dto.getStartDate(), dto.getEndDate())
             .and(ReservationSpecifications.equalToRoom(dto.getRoomId()))
         );
         Page<Reservation> page = reservationRepo.findAll(filters,dto.toPageRequest());

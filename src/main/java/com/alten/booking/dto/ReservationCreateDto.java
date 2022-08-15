@@ -15,10 +15,10 @@ public class ReservationCreateDto {
     @NotBlank(message = "The guest email is required")
     private String guestEmail;
 
-    @NotNull(message = "The reservation start date is required")
+    @NotBlank(message = "The reservation start date is required")
     private String startDate;
 
-    @NotNull(message = "The reservation end date is required")
+    @NotBlank(message = "The reservation end date is required")
     private String endDate;
 
     @NotNull(message = "The reservation room is required")
