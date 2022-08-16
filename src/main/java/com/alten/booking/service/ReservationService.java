@@ -16,6 +16,7 @@ import com.alten.booking.domain.Reservation;
 import com.alten.booking.domain.Room;
 import com.alten.booking.domain.StatusEnum;
 import com.alten.booking.dto.ReservationCreateDto;
+import com.alten.booking.dto.ReservationDeleteDto;
 import com.alten.booking.dto.ReservationDto;
 import com.alten.booking.dto.ReservationPageRequestDto;
 import com.alten.booking.dto.ReservationPageResponseDto;
@@ -145,7 +146,7 @@ public class ReservationService {
         LocalDate endDate = reservation.getEndDate();
         boolean isChangingRoom = dto.getRoomId() != null && !dto.getRoomId().equals(room.getId());
         // Check if the user updating the reservation is the owner of the reservation
-        validateReservationGuestEmail(reservation, dto);
+        validateReservationGuestEmail(reservation, dto.getGuestEmail());
         // Check if it's changing room
         if(isChangingRoom){
             room = roomService.findById(dto.getRoomId());
@@ -165,8 +166,8 @@ public class ReservationService {
         validateReservationStatus(dto.getStatus());
     }
 
-    private void validateReservationGuestEmail(Reservation reservation, ReservationUpdateDto dto) {
-        if(!reservation.getGuestEmail().equals(dto.getGuestEmail())){
+    private void validateReservationGuestEmail(Reservation reservation, String dtoGuest) {
+        if(!reservation.getGuestEmail().equals(dtoGuest)){
             throw new InvalidReservationException("You can't update a reservation that is not yours");
         }
     }
@@ -245,11 +246,12 @@ public class ReservationService {
         return available;
     }
 
-    public void cancelReservation(Long reservationId, ReservationUpdateDto dto) {
-        Reservation reservation = findById(reservationId);
-        validateReservationGuestEmail(reservation, dto);
-        reservation.setStatus(StatusEnum.CANCELED.toString());
-        reservationRepo.save(reservation);
+    public String cancelReservation(Long reservationId, ReservationDeleteDto dto) {
+            Reservation reservation = findById(reservationId);
+            validateReservationGuestEmail(reservation, dto.getGuestEmail());
+            reservation.setStatus(StatusEnum.CANCELED.toString());
+            reservationRepo.save(reservation);
+            return "Reservation cancelled";
     }
 
 

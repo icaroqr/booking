@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alten.booking.dto.ReservationCreateDto;
+import com.alten.booking.dto.ReservationDeleteDto;
 import com.alten.booking.dto.ReservationPageRequestDto;
 import com.alten.booking.dto.ReservationPageResponseDto;
 import com.alten.booking.dto.ReservationUpdateDto;
@@ -50,9 +51,8 @@ public class ReservationController {
     }
 
     @DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> cancelReservation(@PathVariable Long id, @RequestBody @Valid ReservationUpdateDto reservation) {
-        reservationService.cancelReservation(id, reservation);
-        return ResponseEntity.status(HttpStatus.OK).body("Reservation cancelled");
+    public ResponseEntity<String> cancelReservation(@PathVariable Long id, @RequestBody @Valid ReservationDeleteDto reservation) {
+        return ResponseEntity.status(HttpStatus.OK).body(reservationService.cancelReservation(id, reservation));
     }
 
    
