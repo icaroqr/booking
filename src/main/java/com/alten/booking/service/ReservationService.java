@@ -60,9 +60,13 @@ public class ReservationService {
         // Check if it's validating an existing reservation without changing room
         if(dto.getRoomId() == null && dto.getReservationId() != null){
             room = findById(dto.getReservationId()).getRoom();
-        }else{
+        }else
+        if(dto.getRoomId() != null){
             room = roomService.findById(dto.getRoomId());
+        }else{
+            throw new InvalidReservationException("The reservation room is required");
         }
+        // Check if the reservation dates are valid
         if(hasValidDatesEntries(dto) && room != null){
             LocalDate startDate = LocalDate.parse(dto.getStartDate());
             LocalDate endDate = LocalDate.parse(dto.getEndDate());
