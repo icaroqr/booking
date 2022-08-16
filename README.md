@@ -28,7 +28,7 @@ Open the cloned folder with terminal and execute this command to build and run t
 ```
 mvn spring-boot:run
 ```
-Open this URL in your browser to check if the API is online, if it does, it has already created the database tables, and you can proceed:
+Open this URL in your browser to check if the API is running, if it does, it has already created the database tables, and you can proceed:
 ```
 http://localhost:8080/swagger-ui.html#/
 ```
@@ -44,36 +44,73 @@ INSERT INTO booking.room (id, hotel_id, room_details_id) VALUES (1, 1, 1);
 
 ### API Usage
 
-You can use the follow parameters on a GET request body to the endpoint "/reservation/list":
+This API is deployed on a limited free Heroku environment for testing pourpose, you can access it through this URL: https://alten-booking.herokuapp.com/swagger-ui.html
+The API use ISO local date format, and the accepted status are: RESERVED and CANCELED. The API client should use the endpoints in this order to have a better booking experience:
+
+# Get available dates for the room
+```
+GET endpoint: https://alten-booking.herokuapp.com/room/1/availableDates
+```
+# Check dates availability whenever you want
+```
+GET endpoint: https://alten-booking.herokuapp.com/room/1/available
+Payload:
+{
+  "startDate": "2022-08-25",
+  "endDate": "2022-08-28"
+}
+```
+# Create a reservation
+```
+POST endpoint: https://alten-booking.herokuapp.com/reservation
+Payload:
+{
+  "guestEmail":"guest@gmail.com",
+  "startDate":"2022-08-25",
+  "endDate":"2022-08-28",
+  "roomId": 1
+}
+```
+# List the guest reservations
+```
+GET endpoint: https://alten-booking.herokuapp.com/reservation/list
+Payload:
+{
+  "page":0,
+  "size":5,
+  "guestEmail":"guest@gmail.com",
+  "roomId": 1,
+  "startDate":"2022-08-15",
+  "endDate":"2022-08-30"
+}
+
+Fields description
 * page = Current page of a pagination
 * size = Number of elements per page
 * guestEmail = Filter by the user who created the Reservation
-* startDate = Filter by the start date of reservation creation
-* endDate = Filter by the end date of reservation creation
-
-### cURLs example requests
-
-Return the first page of latest 10 reservations
+* startDate = Filter from when the user have reservations starting
+* endDate = Filter until when the user have reservations starting
 ```
-curl --location --request GET 'localhost:8080/reservation/list' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "page": 0,
-	"size": 10,
-	"guestEmail": null,
-	"startDate": null,
-	"endDate": null
-}'
+# Update a reservation
 ```
-Return the first page of 5 reservations, filtering by guest
+PUT endpoint: https://alten-booking.herokuapp.com/reservation/1
+Payload:
+{
+  "status":"RESERVED",
+  "startDate":"2022-08-27",
+  "endDate":"2022-08-30",
+  "roomId": "1"
+}
 ```
-curl --location --request GET 'localhost:8080/reservation/list' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "page": 0,
-	"size": 5,
-	"guestEmail": "guest@gmail.com",
-	"startDate": null,
-	"endDate": null
-}'
+# Cancel a reservation
 ```
+PUT endpoint: https://alten-booking.herokuapp.com/reservation/1
+Payload:
+{
+  "status":"CANCELED",
+  "startDate":"",
+  "endDate":"",
+  "roomId": "1"
+}
+```
+### Next steps
