@@ -10,7 +10,7 @@ A Java REST Api for booking a room
 * MySQL Server 5.7
 * Git
 
-### MySQL configuration
+### MySQL Database configuration
 
 Install MySQL server version 5.7 with the following user and password:
 ```
@@ -42,7 +42,7 @@ INSERT INTO booking.room_details (id, max_reserve_advance_days, max_reserve_days
 INSERT INTO booking.room (id, hotel_id, room_details_id) VALUES (1, 1, 1);
 ```
 
-### Usage
+### API Usage
 
 You can use the follow parameters on a GET request body to the endpoint "/reservation/list":
 * page = Current page of a pagination
