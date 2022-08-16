@@ -1,6 +1,7 @@
 package com.alten.booking.service;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -78,6 +79,7 @@ public class ReservationServiceTests {
     }
 
     @Test
+    @DisplayName("Test creating reservation - Success")
 	public void whenValidData_thenReservationShouldBeCreated() {
         given(roomRepository.findById(1L)).willReturn(Optional.of(mockRoom));
 		given(reservationRepository.save(newReservation)).willReturn(existingReservation);
@@ -90,6 +92,7 @@ public class ReservationServiceTests {
 	}
 
     @Test
+    @DisplayName("Test creating reservation - Invalid data")
 	public void whenCreateReservation_AndHasNoRoom_thenInvalidDataExceptionIsThrown() {
         given(reservationRepository.save(invalidReservation)).willThrow(new InvalidReservationException("The reservation room is required"));
 
@@ -97,6 +100,7 @@ public class ReservationServiceTests {
 	}
 
     @Test
+    @DisplayName("Test finding reservation - Success")
 	public void whenValidId_thenReservationShouldBeFound() {
         given(reservationRepository.findById(1L)).willReturn(Optional.of(existingReservation));
 
