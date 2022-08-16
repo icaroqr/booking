@@ -96,6 +96,7 @@ Fields description
 PUT endpoint: https://alten-booking.herokuapp.com/reservation/1
 Payload:
 {
+  "guestEmail":"guest@gmail.com",
   "status":"RESERVED",
   "startDate":"2022-08-27",
   "endDate":"2022-08-30",
@@ -104,13 +105,10 @@ Payload:
 ```
 ### Cancel a reservation
 ```
-PUT endpoint: https://alten-booking.herokuapp.com/reservation/1
+DELETE endpoint: https://alten-booking.herokuapp.com/reservation/1
 Payload:
 {
-  "status":"CANCELED",
-  "startDate":"",
-  "endDate":"",
-  "roomId": "1"
+  "guestEmail":"guest@gmail.com",
 }
 ```
 ## Next steps

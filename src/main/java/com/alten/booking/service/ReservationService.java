@@ -145,9 +145,7 @@ public class ReservationService {
         LocalDate endDate = reservation.getEndDate();
         boolean isChangingRoom = dto.getRoomId() != null && !dto.getRoomId().equals(room.getId());
         // Check if the user updating the reservation is the owner of the reservation
-        if(!reservation.getGuestEmail().equals(dto.getGuestEmail())){
-            throw new InvalidReservationException("You can't update a reservation that is not yours");
-        }
+        validateReservationGuestEmail(reservation, dto);
         // Check if it's changing room
         if(isChangingRoom){
             room = roomService.findById(dto.getRoomId());
@@ -165,6 +163,12 @@ public class ReservationService {
         validateRoomAvailabilityToUpdate(room, reservation, startDate, endDate);
         // Check if status is valid
         validateReservationStatus(dto.getStatus());
+    }
+
+    private void validateReservationGuestEmail(Reservation reservation, ReservationUpdateDto dto) {
+        if(!reservation.getGuestEmail().equals(dto.getGuestEmail())){
+            throw new InvalidReservationException("You can't update a reservation that is not yours");
+        }
     }
 
     private void validateRoomAvailabilityToUpdate(Room room, Reservation reservation, LocalDate startDate, LocalDate endDate) {
@@ -241,8 +245,11 @@ public class ReservationService {
         return available;
     }
 
-    public void deleteReservation(Long id) {
-        reservationRepo.deleteById(id);
+    public void cancelReservation(Long reservationId, ReservationUpdateDto dto) {
+        Reservation reservation = findById(reservationId);
+        validateReservationGuestEmail(reservation, dto);
+        reservation.setStatus(StatusEnum.CANCELED.toString());
+        reservationRepo.save(reservation);
     }
 
 
