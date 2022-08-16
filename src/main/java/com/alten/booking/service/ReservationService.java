@@ -51,29 +51,26 @@ public class ReservationService {
     }
 
     public ReservationDto validateAndCreateReservation(ReservationCreateDto dto){
-        validateReservation(new ReservationDto(dto)); 
+        validateToCreateReservation(dto); 
         return new ReservationDto(createReservation(dto));
     }
 
-    private void validateReservation(ReservationDto dto) {
-        Room room = null;
-        // Check if it's validating an existing reservation without changing room
-        if(dto.getRoomId() == null && dto.getReservationId() != null){
-            room = findById(dto.getReservationId()).getRoom();
-        }else
+    private void validateToCreateReservation(ReservationCreateDto dto) {
         if(dto.getRoomId() != null){
-            room = roomService.findById(dto.getRoomId());
+            Room  room = roomService.findById(dto.getRoomId());
+            // Check if the reservation dates are valid
+            if(hasValidDatesEntries(new ReservationDto(dto))){
+                LocalDate startDate = LocalDate.parse(dto.getStartDate());
+                LocalDate endDate = LocalDate.parse(dto.getEndDate());
+                // Check if dates are valid
+                validateDateRules(room, startDate, endDate);
+                // Check if room is available
+                validateRoomAvailabilityToCreate(dto, startDate, endDate);
+            }else{
+                throw new InvalidReservationException("Invalid dates informed");
+            }
         }else{
             throw new InvalidReservationException("The reservation room is required");
-        }
-        // Check if the reservation dates are valid
-        if(hasValidDatesEntries(dto) && room != null){
-            LocalDate startDate = LocalDate.parse(dto.getStartDate());
-            LocalDate endDate = LocalDate.parse(dto.getEndDate());
-            // Check if dates are valid
-            validateDateRules(room, startDate, endDate);
-            // Check if room is available
-            validateRoomAvailability(dto, startDate, endDate);
         }
     }
 
@@ -93,22 +90,9 @@ public class ReservationService {
         }
     }
 
-    private void validateRoomAvailability(ReservationDto dto, LocalDate startDate, LocalDate endDate) {
-        if(dto.getReservationId() != null){
-            if(reservationRepo.findTotalReservationsByRoomAndDateExceptCurrentReservation(dto.getRoomId(), startDate, endDate, dto.getReservationId()) > 0){
-                throw new InvalidReservationException("This room is already reserved for these dates, please try another dates");
-            }
-            if(dto.getStatus() != null){
-                try{
-                    StatusEnum.valueOf(dto.getStatus());
-                }catch(IllegalArgumentException e){
-                    throw new InvalidReservationException("Reservation status not valid");
-                }
-            }
-        }else{
-            if(reservationRepo.findTotalReservationsByRoomAndDate(dto.getRoomId(), startDate, endDate) > 0){
-                throw new InvalidReservationException("This room is already reserved for these dates, please try another dates");
-            }
+    private void validateRoomAvailabilityToCreate(ReservationCreateDto dto, LocalDate startDate, LocalDate endDate) {
+        if(reservationRepo.findTotalReservationsByRoomAndDate(dto.getRoomId(), startDate, endDate) > 0){
+            throw new InvalidReservationException("This room is already reserved for these dates, please try another dates");
         }
     }
 
@@ -150,12 +134,52 @@ public class ReservationService {
     }
 
     public ReservationDto validateAndUpdateReservation(Long reservationId, ReservationUpdateDto dto) {
-        validateReservation(new ReservationDto(reservationId, dto)); 
-        return new ReservationDto(updateReservation(reservationId, dto));
+        Reservation reservation = findById(reservationId);
+        validateToUpdateReservation(reservation, dto); 
+        return new ReservationDto(updateReservation(reservation, dto));
     }
 
-    private Reservation updateReservation(Long reservationId, ReservationUpdateDto dto) {
-        Reservation reservation = findById(reservationId);
+    private void validateToUpdateReservation(Reservation reservation, ReservationUpdateDto dto) {
+        Room room = reservation.getRoom();
+        LocalDate startDate = reservation.getStartDate();
+        LocalDate endDate = reservation.getEndDate();
+        boolean isChangingRoom = dto.getRoomId() != null && !dto.getRoomId().equals(room.getId());
+        // Check if it's changing room
+        if(isChangingRoom){
+            room = roomService.findById(dto.getRoomId());
+        }
+        // Check if it's changing dates
+        if(dto.getStartDate() != null && !LocalDate.parse(dto.getStartDate()).equals(reservation.getStartDate())){
+            startDate = LocalDate.parse(dto.getStartDate());
+        }
+        if(dto.getEndDate() != null && !LocalDate.parse(dto.getEndDate()).equals(reservation.getEndDate())){
+            endDate = LocalDate.parse(dto.getEndDate());
+        }
+        // Check if dates are valid
+        validateDateRules(room, startDate, endDate);
+        // Check if room is available
+        validateRoomAvailabilityToUpdate(room, reservation, startDate, endDate);
+        // Check if status is valid
+        validateReservationStatus(dto.getStatus());
+    }
+
+    private void validateRoomAvailabilityToUpdate(Room room, Reservation reservation, LocalDate startDate, LocalDate endDate) {
+        if(reservationRepo.findTotalReservationsByRoomAndDateExceptCurrentReservation(room.getId(), startDate, endDate, reservation.getId()) > 0){
+            throw new InvalidReservationException("This room is already reserved for these dates, please try another dates");
+        }
+    }
+
+    private void validateReservationStatus(String status) {
+        if(status != null){
+            try{
+                StatusEnum.valueOf(status);
+            }catch(IllegalArgumentException e){
+                throw new InvalidReservationException("Trying to update to an invalid reservation status");
+            }
+        }
+    }
+
+    private Reservation updateReservation(Reservation reservation, ReservationUpdateDto dto) {
         if(dto.getStartDate() != null){
             reservation.setStartDate(LocalDate.parse(dto.getStartDate()));
         }
@@ -165,7 +189,9 @@ public class ReservationService {
         if(dto.getRoomId() != null){
             reservation.setRoom(roomService.findById(dto.getRoomId()));
         }
-        reservation.setStatus(dto.getStatus());
+        if(dto.getStatus() != null){
+            reservation.setStatus(dto.getStatus());
+        }
         return reservationRepo.save(reservation);
     }
 
