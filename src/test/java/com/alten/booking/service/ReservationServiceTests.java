@@ -24,7 +24,6 @@ import static org.mockito.BDDMockito.given;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Optional;
 
 @SpringBootTest
 public class ReservationServiceTests {
@@ -45,8 +44,6 @@ public class ReservationServiceTests {
     private static Room mockRoom;
     private static RoomDetails mockRoomDetails;
 
-    private static Reservation newReservation;
-    private static Reservation invalidReservation;
     private static Reservation existingReservation;
     private static ReservationCreateDto newReservationDto;
     private static ReservationCreateDto invalidReservationDto;
@@ -61,15 +58,11 @@ public class ReservationServiceTests {
         mockRoom.setRoomDetails(mockRoomDetails);
         mockHotel.getRooms().add(mockRoom);
 
-        //Mock a new reservation
-        newReservation = new Reservation(null,"guestEmail@gmail.com", LocalDate.now(), LocalDate.now(), LocalDate.now().plusDays(3), StatusEnum.RESERVED.toString(), mockRoom);
         //Mock an existing reservation
         existingReservation = new Reservation(1L,"guestEmail@gmail.com", LocalDate.now(), LocalDate.now(), LocalDate.now().plusDays(3), StatusEnum.RESERVED.toString(), mockRoom);
         //Mock a new reservation dto
         newReservationDto = new ReservationCreateDto("guestEmail@gmail.com", LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
         LocalDate.now().plusDays(3).format(DateTimeFormatter.ISO_LOCAL_DATE), mockRoom.getId());
-        //Mock an invalid new reservation
-        invalidReservation =  new Reservation(0L,"guestEmail@gmail.com", LocalDate.now(), LocalDate.now(), LocalDate.now().plusDays(3), StatusEnum.RESERVED.toString(), null);
         //Mock an invalid new reservation dto
         invalidReservationDto =  new ReservationCreateDto("guestEmail@gmail.com", LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
         LocalDate.now().plusDays(3).format(DateTimeFormatter.ISO_LOCAL_DATE), null);
@@ -81,8 +74,6 @@ public class ReservationServiceTests {
     @Test
     @DisplayName("Test creating reservation - Success")
 	public void whenValidData_thenReservationShouldBeCreated() {
-        given(roomRepository.findById(1L)).willReturn(Optional.of(mockRoom));
-		given(reservationRepository.save(newReservation)).willReturn(existingReservation);
         given(reservationService.validateAndCreateReservation(newReservationDto)).willReturn(existingReservationDto);
         
         ReservationDto createdReservation =  reservationService.validateAndCreateReservation(newReservationDto);
@@ -93,8 +84,8 @@ public class ReservationServiceTests {
 
     @Test
     @DisplayName("Test creating reservation - Invalid data")
-	public void whenCreateReservation_AndHasNoRoom_thenInvalidDataExceptionIsThrown() {
-        given(reservationRepository.save(invalidReservation)).willThrow(new InvalidReservationException("The reservation room is required"));
+	public void whenCreateReservation_AndHasNoRoom_thenInvalidReservationExceptionIsThrown() {
+        given(reservationService.validateAndCreateReservation(invalidReservationDto)).willThrow(new InvalidReservationException("The reservation room is required"));
 
 		assertThrows(InvalidReservationException.class, () -> reservationService.validateAndCreateReservation(invalidReservationDto));
 	}
@@ -102,7 +93,7 @@ public class ReservationServiceTests {
     @Test
     @DisplayName("Test finding reservation - Success")
 	public void whenValidId_thenReservationShouldBeFound() {
-        given(reservationRepository.findById(1L)).willReturn(Optional.of(existingReservation));
+        given(reservationService.findById(1L)).willReturn(existingReservation);
 
         Reservation searchedReservation = reservationService.findById(1L);
 		

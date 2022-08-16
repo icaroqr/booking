@@ -89,7 +89,7 @@ public class ReservationService {
         }
         if(startDate.isAfter(LocalDate.now().plusDays(room.getRoomDetails().getMaxReserveAdvanceDays())) ||
             endDate.isAfter(LocalDate.now().plusDays(room.getRoomDetails().getMaxReserveAdvanceDays()))){
-            throw new MaxReserveAdvanceDaysException("Your reservation can't start or end more than " + room.getRoomDetails().getMaxReserveAdvanceDays() + " days from today");
+            throw new MaxReserveAdvanceDaysException("Your reservation can't be longer than "+ room.getRoomDetails().getMaxReserveAdvanceDays() +" days in advance");
         }
     }
 

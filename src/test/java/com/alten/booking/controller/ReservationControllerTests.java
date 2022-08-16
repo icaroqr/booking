@@ -11,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -95,7 +94,7 @@ public class ReservationControllerTests {
     @Test
     @DisplayName("GET /reservation/2 - Not Found")
     public void givenUnknownReservationId_whenGetReservationById_thenReturnNotFound() throws Exception{
-        when(service.findDtoById(2L)).thenThrow(new NotFoundException("Reservation not found for id: 2"));
+        given(service.findDtoById(2L)).willThrow(new NotFoundException("Reservation not found for id: 2"));
 
         mockMvc.perform(get("/reservation/{id}", 2L))
                 .andExpect(status().isNotFound());
@@ -124,7 +123,7 @@ public class ReservationControllerTests {
     public void givenInvalidData_whenCreateReservation_thenReturnBadRequest() throws Exception{
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
-        when(service.validateAndCreateReservation(createDtoInvalid)).thenThrow(new RuntimeException("Invalid reservation payload"));
+        given(service.validateAndCreateReservation(createDtoInvalid)).willThrow(new RuntimeException("Invalid reservation payload"));
 
         mockMvc.perform(post("/reservation")
            .contentType(MediaType.APPLICATION_JSON)
@@ -138,7 +137,7 @@ public class ReservationControllerTests {
     public void givenReservationWithMoreThan3Days_whenCreateReservation_thenReturnBadRequest() throws Exception{
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
-        when(service.validateAndCreateReservation(createDtoWithInvalidDates)).thenThrow(new MaxReserveDaysException("Your reservation can't be longer than 3 days"));
+        given(service.validateAndCreateReservation(createDtoWithInvalidDates)).willThrow(new MaxReserveDaysException("Your reservation can't be longer than 3 days"));
 
         mockMvc.perform(post("/reservation")
            .contentType(MediaType.APPLICATION_JSON)
@@ -152,7 +151,7 @@ public class ReservationControllerTests {
     public void givenReservationWithMoreThan30DaysInAdvance_whenCreateReservation_thenReturnBadRequest() throws Exception{
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
-        when(service.validateAndCreateReservation(createDtoWithInvalidDates2)).thenThrow(new MaxReserveAdvanceDaysException("Your reservation can't start or end more than 30 days from today"));
+        given(service.validateAndCreateReservation(createDtoWithInvalidDates2)).willThrow(new MaxReserveAdvanceDaysException("Your reservation can't be longer than 30 days in advance"));
 
         mockMvc.perform(post("/reservation")
            .contentType(MediaType.APPLICATION_JSON)

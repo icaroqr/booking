@@ -3,37 +3,34 @@
 A Java REST Api project based on a job interview for Alten
 ## Getting Started
 
-### Installing
+### Pré-requirements to run it locally
 
-* Install Docker: https://www.docker.com
-* After setting up docker, get the database image with the command:
-```
-docker pull mysql:5.7
-```
-After pulling the image, it's time run the MySQL database in a container with the command:
-```
-docker run -d -p 3306:3306 --name mysqldb -e MYSQL_ROOT_PASSWORD=123456 -e MYSQL_DATABASE=booking mysql:5.7
-```
-Create a docker network to bind the application and database containers
-```
-docker network create booking-net
-```
-Connect the database to the network
-```
-docker network connect booking-net mysqldb
-```
-Now it's time to get the application image with the command:
-```
-docker pull icarorez/alten-booking
-```
-### Executing program
+* Java 8
+* Maven
+* MySQL Server 5.7
+* Git
 
-* After running the docker database container, run the app container redirecting to your localhost 8080 port:
-```
-docker run -p 8080:8080 --name booking --net booking-net icarorez/alten-booking
-```
+### MySQL configuration
 
-## Testing API
+Install MySQL server version 5.7 with the following user and password:
+```
+user:root password:123456
+```
+Connect into your local database and create an schema with the name: booking
+### Running the API
+
+Clone this repository with the following command:
+```
+git clone 
+```
+Open the cloned folder with terminal and execute this command to build the application with Maven:
+```
+mvn package -f "pom.xml" 
+```
+Open the cloned folder with terminal and execute this command to run the application over localhost port 8080:
+```
+java '-cp' '\target\booking-0.0.1-SNAPSHOT.jar' 'com.alten.booking.BookingApplication'
+```
 
 ### Usage
 
