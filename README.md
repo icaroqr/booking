@@ -42,16 +42,16 @@ INSERT INTO booking.room_details (id, max_reserve_advance_days, max_reserve_days
 INSERT INTO booking.room (id, hotel_id, room_details_id) VALUES (1, 1, 1);
 ```
 
-### API Usage
+## API Usage
 
 This API is deployed on a limited free Heroku environment for testing pourpose, you can access it through this URL: https://alten-booking.herokuapp.com/swagger-ui.html
-The API use ISO local date format, and the accepted status are: RESERVED and CANCELED. The API client should use the endpoints in this order to have a better booking experience:
+The API use ISO local date format, and the accepted reservation status are: RESERVED and CANCELED. The API client should use the endpoints in this order to have a better booking experience:
 
-# Get available dates for the room
+### Get available dates for the room
 ```
 GET endpoint: https://alten-booking.herokuapp.com/room/1/availableDates
 ```
-# Check dates availability whenever you want
+### Check dates availability whenever you want
 ```
 GET endpoint: https://alten-booking.herokuapp.com/room/1/available
 Payload:
@@ -60,7 +60,7 @@ Payload:
   "endDate": "2022-08-28"
 }
 ```
-# Create a reservation
+### Create a reservation
 ```
 POST endpoint: https://alten-booking.herokuapp.com/reservation
 Payload:
@@ -71,7 +71,7 @@ Payload:
   "roomId": 1
 }
 ```
-# List the guest reservations
+### List the guest reservations
 ```
 GET endpoint: https://alten-booking.herokuapp.com/reservation/list
 Payload:
@@ -91,7 +91,7 @@ Fields description
 * startDate = Filter from when the user have reservations starting
 * endDate = Filter until when the user have reservations starting
 ```
-# Update a reservation
+### Update a reservation
 ```
 PUT endpoint: https://alten-booking.herokuapp.com/reservation/1
 Payload:
@@ -102,7 +102,7 @@ Payload:
   "roomId": "1"
 }
 ```
-# Cancel a reservation
+### Cancel a reservation
 ```
 PUT endpoint: https://alten-booking.herokuapp.com/reservation/1
 Payload:
@@ -113,4 +113,4 @@ Payload:
   "roomId": "1"
 }
 ```
-### Next steps
+## Next steps
