@@ -144,6 +144,10 @@ public class ReservationService {
         LocalDate startDate = reservation.getStartDate();
         LocalDate endDate = reservation.getEndDate();
         boolean isChangingRoom = dto.getRoomId() != null && !dto.getRoomId().equals(room.getId());
+        // Check if the user updating the reservation is the owner of the reservation
+        if(!reservation.getGuestEmail().equals(dto.getGuestEmail())){
+            throw new InvalidReservationException("You can't update a reservation that is not yours");
+        }
         // Check if it's changing room
         if(isChangingRoom){
             room = roomService.findById(dto.getRoomId());
