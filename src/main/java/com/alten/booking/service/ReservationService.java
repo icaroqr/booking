@@ -246,12 +246,11 @@ public class ReservationService {
         return available;
     }
 
-    public String cancelReservation(Long reservationId, ReservationDeleteDto dto) {
+    public ReservationDto cancelReservation(Long reservationId, ReservationDeleteDto dto) {
             Reservation reservation = findById(reservationId);
             validateReservationGuestEmail(reservation, dto.getGuestEmail());
             reservation.setStatus(StatusEnum.CANCELED.toString());
-            reservationRepo.save(reservation);
-            return "Reservation cancelled";
+            return new ReservationDto(reservationRepo.save(reservation));
     }
 
 

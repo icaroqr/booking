@@ -51,7 +51,7 @@ public class ReservationController {
     }
 
     @DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> cancelReservation(@PathVariable Long id, @RequestBody @Valid ReservationDeleteDto reservation) {
+    public ResponseEntity<ReservationDto> cancelReservation(@PathVariable Long id, @RequestBody @Valid ReservationDeleteDto reservation) {
         return ResponseEntity.status(HttpStatus.OK).body(reservationService.cancelReservation(id, reservation));
     }
 
