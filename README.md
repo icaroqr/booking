@@ -42,8 +42,7 @@ INSERT INTO booking.room (id, hotel_id, room_details_id) VALUES (1, 1, 1);
 
 ## API Usage
 
-This API is deployed on a limited free Heroku environment for testing pourpose, you can access it through this URL: https://alten-booking.herokuapp.com/swagger-ui/#/
-The API use ISO local date format, and the accepted reservation status are: RESERVED and CANCELED. The API client should use the endpoints in this order to have a better booking experience:
+This API is deployed on a limited free Heroku environment for testing pourpose, you can access it through this URL: https://alten-booking.herokuapp.com/swagger-ui/#/ , there is a Room already created with id = 1. The API use ISO local date format, and the accepted reservation status are: RESERVED and CANCELED. The API client should use the endpoints in this order to have a better booking experience:
 
 ### Get available dates for the room
 ```
