@@ -12,10 +12,8 @@ A Java REST Api for booking a room
 
 ### MySQL Database configuration
 
-Install MySQL server version 5.7 with the following user and password:
-```
-user:root password:123456
-```
+Install MySQL server version 5.7 with the default user root and password: 123456, or change the application.properties at your convenience.
+
 Connect into your local database and create an schema with the name: booking
 
 ### Running the API
@@ -83,14 +81,14 @@ Payload:
   "startDate":"2022-08-15",
   "endDate":"2022-08-30"
 }
-
+```
 Fields description
 * page = Current page of a pagination
 * size = Number of elements per page
 * guestEmail = Filter by the user who created the Reservation
 * startDate = Filter from when the user have reservations starting
 * endDate = Filter until when the user have reservations starting
-```
+
 ### Update a reservation
 ```
 PUT endpoint: https://alten-booking.herokuapp.com/reservation/1
@@ -112,3 +110,7 @@ Payload:
 }
 ```
 ## Next steps
+In order to keep the quality of service with no downtime, we should queue the reservations requests through messaging systems like RabbitMQ or Kafka.
+This could be done spliting this project into 3. The first with the common classes used between the services, the second with the ReservationRequest validation and queueing where we can create a message producer that will connect to a RabbitMQ instance and send messages to an specific queue, and the third one with a listener to this specific queue which will be responsible to persist the reservation and send some notification such as an email or receipt to the guest email. Separating the responsabilities in this way we will not lose any request and will be able to escalate resources on demand to each microservice.
+
+After garantee the "no downtime" requirement, the next steps could be secure the API requests with authentication and authorization, using Spring Security and JWT, and finish the Unit tests to cover all validations and operations like updating and canceling reservations. 
