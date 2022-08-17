@@ -41,46 +41,28 @@ public class ReservationControllerTests {
     @MockBean
     private ReservationService service;
 
-    private static ReservationCreateDto createDto;
-    private static ReservationCreateDto createDtoInvalid;
-    private static ReservationCreateDto createDtoWithInvalidDates;
-    private static ReservationCreateDto createDtoWithInvalidDates2;
-    private static ReservationDto reservationDto;
+    private static ReservationCreateDto newReservationDto;
+    private static ReservationCreateDto invalidReservationDto;
+    private static ReservationDto existingReservation;
     
 
     @BeforeAll
     public static void setUp(){
         //Mock a new reservation
-        createDto =  new ReservationCreateDto("guest@gmail.com", 
-        LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
-        LocalDate.now().plusDays(2).format(DateTimeFormatter.ISO_LOCAL_DATE), 
-        1L);
+        newReservationDto =  new ReservationCreateDto("guest@gmail.com", LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
+        LocalDate.now().plusDays(3).format(DateTimeFormatter.ISO_LOCAL_DATE), 1L);
         //Mock an existing reservation
-        reservationDto = new ReservationDto(1L,1L,"guest@gmail.com", 
-        LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
-        LocalDate.now().plusDays(2).format(DateTimeFormatter.ISO_LOCAL_DATE), 
-        StatusEnum.RESERVED.toString());
+        existingReservation = new ReservationDto(1L,1L,"guest@gmail.com", LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
+        LocalDate.now().plusDays(3).format(DateTimeFormatter.ISO_LOCAL_DATE), StatusEnum.RESERVED.toString());
         //Mock an invalid reservation
-        createDtoInvalid = new ReservationCreateDto(null, 
-        LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
-        LocalDate.now().plusDays(2).format(DateTimeFormatter.ISO_LOCAL_DATE),
-        null);
-        //Mock an reservation with more than 3 days of diff
-        createDtoWithInvalidDates = new ReservationCreateDto("guest@gmail.com", 
-        LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
-        LocalDate.now().plusDays(4).format(DateTimeFormatter.ISO_LOCAL_DATE),
-        1L);
-        //Mock an reservation with more than 30 days in advance
-        createDtoWithInvalidDates2 = new ReservationCreateDto("guest@gmail.com", 
-        LocalDate.now().plusDays(30).format(DateTimeFormatter.ISO_LOCAL_DATE), 
-        LocalDate.now().plusDays(33).format(DateTimeFormatter.ISO_LOCAL_DATE),
-        1L);
+        invalidReservationDto = new ReservationCreateDto(null, LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
+        LocalDate.now().plusDays(3).format(DateTimeFormatter.ISO_LOCAL_DATE), null);
     }
 
     @Test
     @DisplayName("GET /reservation/1 - Success")
     public void givenReservationId_whenGetReservationById_thenReturnJsonArray() throws Exception{
-        given(service.findDtoById(1L)).willReturn(reservationDto);
+        given(service.findDtoById(1L)).willReturn(existingReservation);
         
         mockMvc.perform(get("/reservation/1")
            .contentType(MediaType.APPLICATION_JSON))
@@ -105,11 +87,11 @@ public class ReservationControllerTests {
     public void givenValidData_whenCreateReservation_thenReturnJsonArray() throws Exception{
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
-        given(service.validateAndCreateReservation(createDto)).willReturn(reservationDto);
+        given(service.validateAndCreateReservation(newReservationDto)).willReturn(existingReservation);
 
         mockMvc.perform(post("/reservation")
            .contentType(MediaType.APPLICATION_JSON)
-           .content(ow.writeValueAsString(createDto)) 
+           .content(ow.writeValueAsString(newReservationDto)) 
            .accept(MediaType.APPLICATION_JSON))
            .andExpect(status().isCreated())
            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -123,11 +105,11 @@ public class ReservationControllerTests {
     public void givenInvalidData_whenCreateReservation_thenReturnBadRequest() throws Exception{
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
-        given(service.validateAndCreateReservation(createDtoInvalid)).willThrow(new RuntimeException("Invalid reservation payload"));
+        given(service.validateAndCreateReservation(invalidReservationDto)).willThrow(new RuntimeException("Invalid reservation payload"));
 
         mockMvc.perform(post("/reservation")
            .contentType(MediaType.APPLICATION_JSON)
-           .content(ow.writeValueAsString(createDtoInvalid)) 
+           .content(ow.writeValueAsString(invalidReservationDto)) 
            .accept(MediaType.APPLICATION_JSON))
            .andExpect(status().isBadRequest());
     }
@@ -137,11 +119,13 @@ public class ReservationControllerTests {
     public void givenReservationWithMoreThan3Days_whenCreateReservation_thenReturnBadRequest() throws Exception{
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
-        given(service.validateAndCreateReservation(createDtoWithInvalidDates)).willThrow(new MaxReserveDaysException("Your reservation can't be longer than 3 days"));
+        invalidReservationDto.setEndDate(LocalDate.now().plusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        given(service.validateAndCreateReservation(invalidReservationDto)).willThrow(new MaxReserveDaysException("Your reservation can't be longer than 3 days"));
 
         mockMvc.perform(post("/reservation")
            .contentType(MediaType.APPLICATION_JSON)
-           .content(ow.writeValueAsString(createDtoWithInvalidDates)) 
+           .content(ow.writeValueAsString(invalidReservationDto)) 
            .accept(MediaType.APPLICATION_JSON))
            .andExpect(status().isBadRequest());
     }
@@ -151,11 +135,14 @@ public class ReservationControllerTests {
     public void givenReservationWithMoreThan30DaysInAdvance_whenCreateReservation_thenReturnBadRequest() throws Exception{
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
-        given(service.validateAndCreateReservation(createDtoWithInvalidDates2)).willThrow(new MaxReserveAdvanceDaysException("Your reservation can't be longer than 30 days in advance"));
+        invalidReservationDto.setStartDate(LocalDate.now().plusDays(30).format(DateTimeFormatter.ISO_LOCAL_DATE));
+        invalidReservationDto.setEndDate(LocalDate.now().plusDays(33).format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        given(service.validateAndCreateReservation(invalidReservationDto)).willThrow(new MaxReserveAdvanceDaysException("Your reservation can't be longer than 30 days in advance"));
 
         mockMvc.perform(post("/reservation")
            .contentType(MediaType.APPLICATION_JSON)
-           .content(ow.writeValueAsString(createDtoWithInvalidDates2)) 
+           .content(ow.writeValueAsString(invalidReservationDto)) 
            .accept(MediaType.APPLICATION_JSON))
            .andExpect(status().isBadRequest());
     }

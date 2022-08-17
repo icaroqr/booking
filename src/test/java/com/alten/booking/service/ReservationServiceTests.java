@@ -3,6 +3,7 @@ package com.alten.booking.service;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -14,16 +15,20 @@ import com.alten.booking.domain.Reservation;
 import com.alten.booking.dto.ReservationCreateDto;
 import com.alten.booking.dto.ReservationDto;
 import com.alten.booking.exceptions.InvalidReservationException;
+import com.alten.booking.exceptions.MaxReserveAdvanceDaysException;
+import com.alten.booking.exceptions.MaxReserveDaysException;
 import com.alten.booking.repository.ReservationRepository;
-import com.alten.booking.repository.RoomRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Optional;
 
 @SpringBootTest
 public class ReservationServiceTests {
@@ -31,11 +36,8 @@ public class ReservationServiceTests {
     @Mock
     private ReservationRepository reservationRepository;
 
-    @Mock
+    @InjectMocks
     private ReservationService reservationService;
-
-    @Mock
-    private RoomRepository roomRepository;
 
     @Mock
     private RoomService roomService;
@@ -47,7 +49,6 @@ public class ReservationServiceTests {
     private static Reservation existingReservation;
     private static ReservationCreateDto newReservationDto;
     private static ReservationCreateDto invalidReservationDto;
-    private static ReservationDto existingReservationDto;
 
     @BeforeAll
     public static void setUp(){
@@ -57,7 +58,6 @@ public class ReservationServiceTests {
         mockRoomDetails = new RoomDetails(1L, 3, 30);
         mockRoom.setRoomDetails(mockRoomDetails);
         mockHotel.getRooms().add(mockRoom);
-
         //Mock an existing reservation
         existingReservation = new Reservation(1L,"guestEmail@gmail.com", LocalDate.now(), LocalDate.now(), LocalDate.now().plusDays(3), StatusEnum.RESERVED.toString(), mockRoom);
         //Mock a new reservation dto
@@ -65,38 +65,64 @@ public class ReservationServiceTests {
         LocalDate.now().plusDays(3).format(DateTimeFormatter.ISO_LOCAL_DATE), mockRoom.getId());
         //Mock an invalid new reservation dto
         invalidReservationDto =  new ReservationCreateDto("guestEmail@gmail.com", LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), 
-        LocalDate.now().plusDays(3).format(DateTimeFormatter.ISO_LOCAL_DATE), null);
-        //Mock an existing reservation dto
-        existingReservationDto = new ReservationDto(existingReservation);
-        
+        LocalDate.now().plusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE), mockRoom.getId());
     }
 
     @Test
-    @DisplayName("Test creating reservation - Success")
-	public void whenValidData_thenReservationShouldBeCreated() {
-        given(reservationService.validateAndCreateReservation(newReservationDto)).willReturn(existingReservationDto);
-        
-        ReservationDto createdReservation =  reservationService.validateAndCreateReservation(newReservationDto);
-		
+    @DisplayName("Test reservation validation - Success")
+	public void whenValidData_thenReservationShouldValidatedAndCreated() {
+        given(roomService.findById(1L)).willReturn(mockRoom);
+        given(reservationService.createReservation(newReservationDto)).willReturn(existingReservation);
+
+        ReservationDto createdReservation = reservationService.validateAndCreateReservation(newReservationDto);
+
         assertThat(createdReservation).isNotNull();
         assertThat(createdReservation.getReservationId()).isEqualTo(1L);
 	}
 
     @Test
-    @DisplayName("Test creating reservation - Invalid data")
+    @DisplayName("Test reservation validation - Invalid Reservation")
 	public void whenCreateReservation_AndHasNoRoom_thenInvalidReservationExceptionIsThrown() {
-        given(reservationService.validateAndCreateReservation(invalidReservationDto)).willThrow(new InvalidReservationException("The reservation room is required"));
+        given(roomService.findById(1L)).willReturn(mockRoom);
+
+        invalidReservationDto.setRoomId(null);
 
 		assertThrows(InvalidReservationException.class, () -> reservationService.validateAndCreateReservation(invalidReservationDto));
+
+        verify(reservationRepository, never()).save(any(Reservation.class));
+	}
+
+    @Test
+    @DisplayName("Test reservation validation - More than 3 days")
+	public void whenCreateReservation_AndHasMoreThan3Days_thenMaxReserveDaysExceptionIsThrown() {
+        given(roomService.findById(1L)).willReturn(mockRoom);
+
+		assertThrows(MaxReserveDaysException.class, () -> reservationService.validateAndCreateReservation(invalidReservationDto));
+
+        verify(reservationRepository, never()).save(any(Reservation.class));
+	}
+
+    @Test
+    @DisplayName("Test reservation validation - More than 30 days in advance")
+	public void whenCreateReservation_AndIsMoreThan30DaysInAdvance_thenMaxReserveDaysExceptionIsThrown() {
+        given(roomService.findById(1L)).willReturn(mockRoom);
+
+        invalidReservationDto.setStartDate(LocalDate.now().plusDays(30).format(DateTimeFormatter.ISO_LOCAL_DATE));
+        invalidReservationDto.setEndDate(LocalDate.now().plusDays(33).format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+		assertThrows(MaxReserveAdvanceDaysException.class, () -> reservationService.validateAndCreateReservation(invalidReservationDto));
+
+        verify(reservationRepository, never()).save(any(Reservation.class));
 	}
 
     @Test
     @DisplayName("Test finding reservation - Success")
 	public void whenValidId_thenReservationShouldBeFound() {
-        given(reservationService.findById(1L)).willReturn(existingReservation);
+        given(reservationRepository.findById(1L)).willReturn(Optional.of(existingReservation));
 
         Reservation searchedReservation = reservationService.findById(1L);
 		
+        assertThat(searchedReservation).isNotNull();
 		assertThat(searchedReservation.getId()).isEqualTo(existingReservation.getId());
 	}
     
