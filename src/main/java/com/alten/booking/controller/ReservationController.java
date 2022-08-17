@@ -35,7 +35,7 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.OK).body(reservationService.findDtoById(id));
     }
 
-    @GetMapping(value = "/list", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/list", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ReservationPageResponseDto> getUserRerservationList(@RequestBody @Valid ReservationPageRequestDto reservationPageRequest) {
         return ResponseEntity.status(HttpStatus.OK).body(reservationService.getUserReservationsPageList(reservationPageRequest));
     }

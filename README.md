@@ -42,7 +42,7 @@ INSERT INTO booking.room (id, hotel_id, room_details_id) VALUES (1, 1, 1);
 
 ## API Usage
 
-This API is deployed on a limited free Heroku environment for testing pourpose, you can access it through this URL: https://alten-booking.herokuapp.com/swagger-ui.html
+This API is deployed on a limited free Heroku environment for testing pourpose, you can access it through this URL: https://alten-booking.herokuapp.com/swagger-ui/
 The API use ISO local date format, and the accepted reservation status are: RESERVED and CANCELED. The API client should use the endpoints in this order to have a better booking experience:
 
 ### Get available dates for the room
@@ -51,7 +51,7 @@ GET endpoint: https://alten-booking.herokuapp.com/room/1/availableDates
 ```
 ### Check dates availability whenever you want
 ```
-GET endpoint: https://alten-booking.herokuapp.com/room/1/available
+POST endpoint: https://alten-booking.herokuapp.com/room/1/available
 Payload:
 {
   "startDate": "2022-08-25",
@@ -71,7 +71,7 @@ Payload:
 ```
 ### List the guest reservations
 ```
-GET endpoint: https://alten-booking.herokuapp.com/reservation/list
+POST endpoint: https://alten-booking.herokuapp.com/reservation/list
 Payload:
 {
   "page":0,
@@ -88,7 +88,10 @@ Fields description
 * guestEmail = Filter by the user who created the Reservation
 * startDate = Filter from when the user have reservations starting
 * endDate = Filter until when the user have reservations starting
-
+### Get an specific reservation
+```
+GET endpoint: https://alten-booking.herokuapp.com/reservation/1
+```
 ### Update a reservation
 ```
 PUT endpoint: https://alten-booking.herokuapp.com/reservation/1
