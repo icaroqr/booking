@@ -28,7 +28,7 @@ mvn spring-boot:run
 ```
 Open this URL in your browser to check if the API is running, if it does, it has already created the database tables, and you can proceed:
 ```
-http://localhost:8080/swagger-ui.html#/
+http://localhost:8080/swagger-ui/#/
 ```
 
 ### Initial DataBase data
@@ -42,7 +42,7 @@ INSERT INTO booking.room (id, hotel_id, room_details_id) VALUES (1, 1, 1);
 
 ## API Usage
 
-This API is deployed on a limited free Heroku environment for testing pourpose, you can access it through this URL: https://alten-booking.herokuapp.com/swagger-ui/
+This API is deployed on a limited free Heroku environment for testing pourpose, you can access it through this URL: https://alten-booking.herokuapp.com/swagger-ui/#/
 The API use ISO local date format, and the accepted reservation status are: RESERVED and CANCELED. The API client should use the endpoints in this order to have a better booking experience:
 
 ### Get available dates for the room
@@ -116,4 +116,4 @@ Payload:
 In order to keep the quality of service with no downtime, we should queue the reservations requests through messaging systems like RabbitMQ or Kafka.
 This could be done spliting this project into 3. The first with the common classes used between the services, the second with the ReservationRequest validation and queueing where we can create a message producer that will connect to a RabbitMQ instance and send messages to an specific queue, and the third one with a listener to this specific queue which will be responsible to persist the reservation and send some notification such as an email or receipt to the guest email. Separating the responsabilities in this way we will not lose any request and will be able to escalate resources on demand to each microservice.
 
-After garantee the "no downtime" requirement, the next steps could be secure the API requests with authentication and authorization, using Spring Security and JWT, and finish the Unit tests to cover all validations and operations like updating and canceling reservations. 
+After garantee the "no downtime" requirement, the next steps could be secure the API requests with authentication and authorization, using Spring Security and JWT, and finish the Unit tests to cover all validations and operations like updating, checking and canceling reservations. 
