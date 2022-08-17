@@ -97,6 +97,9 @@ public class ReservationServiceTests {
 	public void whenCreateReservation_AndHasMoreThan3Days_thenMaxReserveDaysExceptionIsThrown() {
         given(roomService.findById(1L)).willReturn(mockRoom);
 
+        invalidReservationDto.setStartDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        invalidReservationDto.setEndDate(LocalDate.now().plusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE));
+        
 		assertThrows(MaxReserveDaysException.class, () -> reservationService.validateAndCreateReservation(invalidReservationDto));
 
         verify(reservationRepository, never()).save(any(Reservation.class));
